@@ -15,6 +15,8 @@ defmodule Horde.Registry do
   @update_processes_debounce 50
   @force_update_processes 1000
 
+  require Logger
+
   defmodule State do
     @moduledoc false
     defstruct node_id: nil,
