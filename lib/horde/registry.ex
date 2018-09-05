@@ -70,7 +70,8 @@ defmodule Horde.Registry do
   end
 
   def terminate(reason, state) do
-    GenServer.cast(
+    Logger.info("**** Terminating registry due to #{inspect(reason)}")
+    GenServer.call(
       state.members_pid,
       {:operation, {:remove, [state.node_id]}}
     )
@@ -206,7 +207,7 @@ defmodule Horde.Registry do
   end
 
   def handle_info({:processes_updated, reply_to}, state) do
-    processes = DeltaCrdt.CausalCrdt.read(state.processes_pid, 30_000)
+    processes = DeltaCrdt.CausalCrdt.read(state.processes_pid, 2000)
 
     :ets.insert(state.ets_table, Map.to_list(processes))
 
@@ -222,7 +223,7 @@ defmodule Horde.Registry do
   end
 
   def handle_info({:members_updated, reply_to}, state) do
-    members = DeltaCrdt.CausalCrdt.read(state.members_pid, 30_000)
+    members = DeltaCrdt.CausalCrdt.read(state.members_pid, 2000)
 
     member_pids =
       MapSet.new(members, fn {_key, {members_pid, _processes_pid}} -> members_pid end)
