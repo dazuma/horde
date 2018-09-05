@@ -204,6 +204,7 @@ defmodule Horde.Registry do
         {:request_to_join_hordes, {_other_node_id, other_members_pid, reply_to}},
         state
       ) do
+    Logger.info("**** Registry receiving join hordes")
     Kernel.send(state.members_pid, {:add_neighbours, [other_members_pid]})
     GenServer.reply(reply_to, true)
     {:noreply, state}
@@ -216,6 +217,7 @@ defmodule Horde.Registry do
 
     all_keys = :ets.match(state.ets_table, {:"$1", :_}) |> MapSet.new(fn [x] -> x end)
     new_keys = Map.keys(processes) |> MapSet.new()
+    Logger.info("**** Registry received data update: #{inspect(MapSet.to_list(new_keys))}")
     to_delete_keys = MapSet.difference(all_keys, new_keys)
 
     to_delete_keys |> Enum.each(fn key -> :ets.delete(state.ets_table, key) end)
@@ -236,6 +238,8 @@ defmodule Horde.Registry do
       MapSet.new(state.members, fn {_key, {members_pid, _processes_pid}} -> members_pid end)
       |> MapSet.delete(nil)
 
+    Logger.info("**** Registry received members updated: #{inspect(Enum.count(state_member_pids))} -> #{inspect(Enum.count(member_pids))}")
+
     # if there are any new pids in `member_pids`
     if MapSet.difference(member_pids, state_member_pids) |> Enum.any?() do
       processes_pids =
@@ -255,6 +259,7 @@ defmodule Horde.Registry do
   end
 
   def handle_call({:join_hordes, other_horde}, from, state) do
+    Logger.info("**** Registry requesting join hordes")
     GenServer.cast(
       other_horde,
       {:request_to_join_hordes, {state.node_id, state.members_pid, from}}
