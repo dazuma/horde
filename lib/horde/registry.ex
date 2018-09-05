@@ -73,6 +73,7 @@ defmodule Horde.Registry do
 
   def terminate(reason, state) do
     Logger.info("**** Terminating registry due to #{inspect(reason)}")
+    GenServer.call(state.processes_pid, :sync)
     GenServer.call(
       state.members_pid,
       {:operation, {:remove, [state.node_id]}}
