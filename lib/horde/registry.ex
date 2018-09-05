@@ -101,8 +101,8 @@ defmodule Horde.Registry do
   def lookup({:via, _, {horde, name}}), do: lookup(horde, name)
 
   def lookup(horde, name) do
-    with [{^name, {pid}}] <- :ets.lookup(get_ets_table(horde), name),
-         true <- process_alive?(pid) do
+    with [{^name, {pid}}] <- :ets.lookup(get_ets_table(horde), name) do
+#         true <- process_alive?(pid) do
       pid
     else
       _ -> :undefined
